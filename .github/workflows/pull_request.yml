@@ -1,0 +1,11 @@
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: |
+          curl "${{ vars.YGOPRODECK_API }}" -o cardinfo.json
+          dotnet run "cardinfo.json" -c Debug --project JsonToSqlite/src/JsonToSqlite
