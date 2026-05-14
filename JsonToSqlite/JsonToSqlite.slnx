@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/JsonToSqlite.Common/JsonToSqlite.Common.csproj" />
+    <Project Path="src/JsonToSqlite.Sqlite/JsonToSqlite.Sqlite.csproj" />
+    <Project Path="src/JsonToSqlite/JsonToSqlite.csproj" />
+  </Folder>
+</Solution>
