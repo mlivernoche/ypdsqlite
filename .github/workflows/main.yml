@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v6
       
       - name: Download YGOProDeck API
-        run: curl "$YGOPRODECK_API" -o cardinfo.json
+        run: curl "${{ vars.YGOPRODECK_API }}" -o cardinfo.json
       
       - name: Build Console App
         run: dotnet run "cardinfo.json" -c Debug --project JsonToSqlite/src/JsonToSqlite
