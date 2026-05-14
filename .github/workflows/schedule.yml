@@ -18,10 +18,13 @@ jobs:
           dotnet run "cardinfo.json" --project JsonToSqlite/src/JsonToSqlite
           mkdir -p release
           mv cards.db ./release
-      - uses: elgohr/Github-Release-Action@v5
+      - run: |
+          # Generate a unique tag based on the date/time
+          TAG="db-$(date +'%Y%m%d-%H%M')"
+
+          # Create the release and upload the database file
+          gh release create "$TAG" ./release/cards.db \
+            --title "Cards Database Update ($TAG)" \
+            --notes "Automated daily update of the card database."
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          title: "Cards Database"
-          tag: ${{ github.ref_name }}
-          workdir: release
