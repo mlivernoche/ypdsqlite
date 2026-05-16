@@ -6,25 +6,49 @@ on:
   workflow_dispatch: # Allows you to run it manually for testing
 
 jobs:
-  run-app:
+  build-database:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-dotnet@v5
       - run: |
           curl "${{ vars.YGOPRODECK_API }}" -o cardinfo.json
           dotnet run "cardinfo.json" --project JsonToSqlite/src/JsonToSqlite
-          mkdir -p release
-          mv cards.db ./release
-      - run: |
-          # Generate a unique tag based on the date/time
-          TAG="db-$(date +'%Y%m%d-%H%M')"
 
-          # Create the release and upload the database file
-          gh release create "$TAG" ./release/cards.db \
-            --title "Cards Database Update ($TAG)" \
-            --notes "Automated daily update of the card database."
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  run-app:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      deployments: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: chrnorm/deployment-action@v2
+        id: test
+        with:
+          token: "${{ github.token }}"
+          environment-url: ${{ secrets.R2_API }}
+          environment: production
+
+      - uses: actions/setup-dotnet@v5
+
+      - run: |
+          curl "${{ vars.YGOPRODECK_API }}" -o cardinfo.json
+          dotnet run "cardinfo.json" --project JsonToSqlite/src/JsonToSqlite
+
+      - uses: shallwefootball/s3-upload-action@master
+        id: R2
+        with:
+          aws_key_id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          aws_bucket: ${{ secrets.R2_BUCKET }}
+          source_dir: "./cards.db"
+          endpoint: ${{ secrets.R2_API }}
+
+      - if: success()
+        uses: chrnorm/deployment-status@releases/v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target_url: ${{ secrets.R2_API }}/cards.db
+          state: "success"
+          deployment_id: ${{ steps.test.outputs.deployment_id }}
