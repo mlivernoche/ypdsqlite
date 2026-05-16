@@ -36,6 +36,7 @@ jobs:
           aws_secret_access_key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           aws_bucket: ${{ secrets.R2_BUCKET }}
           source_dir: release
+          destination_dir: ""
           endpoint: ${{ secrets.R2_API }}
 
       - if: success()
