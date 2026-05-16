@@ -26,6 +26,8 @@ jobs:
       - run: |
           curl "${{ vars.YGOPRODECK_API }}" -o cardinfo.json
           dotnet run "cardinfo.json" --project JsonToSqlite/src/JsonToSqlite
+          mkdir release
+          mv cards.db release/cards.db
 
       - uses: shallwefootball/s3-upload-action@master
         id: R2
@@ -33,7 +35,7 @@ jobs:
           aws_key_id: ${{ secrets.R2_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           aws_bucket: ${{ secrets.R2_BUCKET }}
-          source_dir: "./cards.db"
+          source_dir: release
           endpoint: ${{ secrets.R2_API }}
 
       - if: success()
